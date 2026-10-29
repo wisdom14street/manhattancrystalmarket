@@ -1,12 +1,21 @@
 {
-  "brand": "Manhattan Crystal Market",
-  "short_name": "Crystal Market",
-  "site_url": "https://manhattancrystalmarket.com",
-  "storefront": "Manhattan Crystal Market",
-  "REVIEW_URL": "",
-  "GOOGLE_SITE_VERIFICATION": "",
-  "bestseller_collections": ["crystals", "crystal-bead-bracelets", "pendants-by-stone"],
-  "siblings": [],
-  "theme": {"ink": "#101418", "paper": "#f5f2ec", "accent": "#c9a227",
-            "fonts": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"}
+ "brand": "Manhattan Crystal Market",
+ "short_name": "Crystal Market",
+ "site_url": "https://manhattancrystalmarket.com",
+ "storefront": "Manhattan Crystal Market",
+ "REVIEW_URL": "",
+ "GOOGLE_SITE_VERIFICATION": "",
+ "bestseller_collections": [
+  "crystals",
+  "crystal-bead-bracelets",
+  "pendants-by-stone"
+ ],
+ "siblings": [],
+ "theme": {
+  "ink": "#101418",
+  "paper": "#f5f2ec",
+  "accent": "#c9a227",
+  "fonts": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+ },
+ "include_no_photo": false
 }

@@ -80,7 +80,7 @@ PICKUP = _load('pickup.json', {}); RANK = _load('bestsellers.json', {})
 products = []
 for p in raw:
     base = category(p)
-    if not base: continue
+    if not base or (not p.get('images') and not CFG.get('include_no_photo', True)): continue
     vs = [v for v in p['variants'] if float(v['price']) > 0]
     avail = [v for v in vs if v['available']]
     if not avail: continue
@@ -278,7 +278,7 @@ json.dump({"name": BRAND, "short_name": CFG.get('short_name', BRAND), "start_url
 
 compact = [{'h': x['handle'], 't': x['title'], 'c': x['aisle'], 'k': x['base'], 'f': x['family'], 'b': x['brand'], 's': x['style'], 'p': x['price'],
             'o': x['compare'] if len(x['group']) == 1 else None, 'n': len(x['group']), 'i': img(x['images'][0], 400), 'm': 1 if x['multi'] else 0,
-            'g': 1 if x['gift'] else 0, 'r': round(min(y['rank'] for y in x['group']), 4), 'd': max(y['created'] for y in x['group'])[:10]} for x in leaders]
+            'g': 1 if x['gift'] else 0, 'x': 1 if x['noimg'] else 0, 'r': round(min(y['rank'] for y in x['group']), 4), 'd': max(y['created'] for y in x['group'])[:10]} for x in leaders]
 json.dump(compact, open(os.path.join(DIST, 'data', 'catalog.json'), 'w'), separators=(',', ':'))
 json.dump({'aisles': {k: {'name': AISLES[k][0], 'slug': AISLES[k][2], 'color': AISLES[k][4]} for k in AISLE_KEYS}, 'fams': FAM_NAME,
            'brands': {k: BR.NAME[k] for k in brand_count}, 'built': datetime.datetime.now().isoformat(timespec='minutes')},

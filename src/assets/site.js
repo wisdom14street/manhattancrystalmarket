@@ -38,7 +38,7 @@
     function apply(){
       const [lo,hi]=st.price?st.price.split('-').map(Number):[0,1e9],ws=words(st.q);
       list=data.filter(x=>match(x,pre)&&(!st.cat||x.c===st.cat)&&(!st.fam||x.f===st.fam)&&(!st.brand||x.b===st.brand)&&(!st.sty||x.s===st.sty)&&x.p>=lo&&x.p<hi&&(!ws.length||hit(x,meta,ws)));
-      list.sort({best:(a,b)=>a.r-b.r||a.p-b.p,new:(a,b)=>b.d.localeCompare(a.d),lo:(a,b)=>a.p-b.p,hi:(a,b)=>b.p-a.p,az:(a,b)=>a.t.localeCompare(b.t)}[st.sort]);
+      const by={best:(a,b)=>a.r-b.r||a.p-b.p,new:(a,b)=>b.d.localeCompare(a.d),lo:(a,b)=>a.p-b.p,hi:(a,b)=>b.p-a.p,az:(a,b)=>a.t.localeCompare(b.t)}[st.sort];list.sort((a,b)=>(a.x||0)-(b.x||0)||by(a,b));
       shown=0;grid.innerHTML='';page();count.textContent=list.length.toLocaleString()+' item'+(list.length===1?'':'s');
       $$('.f').forEach(b=>{const on=pre.aisle?pre.aisle.length===1&&b.dataset.cat===pre.aisle[0]:b.dataset.cat===st.cat;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
       if(!locked){const u=new URLSearchParams();Object.entries(st).forEach(([k,v])=>{if(v&&!(k==='sort'&&v===(($('#sort option[value=best]'))?'best':'new')))u.set(k,v)});history.replaceState(null,'',location.pathname+(u.toString()?'?'+u:''))}
