@@ -471,6 +471,8 @@ page('/404.html', f'Page not found | {BRAND}', 'Page not found', '<section class
 # sitemap + robots
 urls = ['/', '/visit/', '/crystal-shop-near-union-square/', '/shop/', '/about/', '/shipping/', '/returns/', '/privacy/', '/terms/'] + [f'/shop/{CAT_SLUG[k]}/' for k in CATS] + [f"/products/{x['handle']}/" for x in products]
 open(os.path.join(DIST, '.nojekyll'), 'w').write('')
+if not BASE and SITE.startswith('https://') and 'github.io' not in SITE:
+    open(os.path.join(DIST, 'CNAME'), 'w').write(SITE.split('://', 1)[1] + '\n')
 open(os.path.join(DIST, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + ''.join(f'<url><loc>{SITE}{u}</loc></url>' for u in urls) + '</urlset>')
 open(os.path.join(DIST, 'robots.txt'), 'w').write('User-agent: *\nDisallow: /\n' if PREVIEW else f'User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n')
 

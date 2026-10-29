@@ -24,11 +24,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Fetch catalog and build (preview, noindex, subpath)
+      - name: Fetch catalog and build (production, manhattancrystalmarket.com)
         run: |
           python3 scripts/fetch.py
           python3 scripts/pickup.py
-          python3 scripts/build.py --preview --base=/${{ github.event.repository.name }} --site=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          python3 scripts/build.py --site=https://manhattancrystalmarket.com
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

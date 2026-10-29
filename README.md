@@ -16,7 +16,7 @@ Product pages re-check live price and stock in the browser from
     python3 scripts/build.py                       # production build for https://manhattancrystalmarket.com
 
 ## Hosting
-`.github/workflows/pages.yml` builds the preview on every push to `main` and daily, and deploys it to
+`.github/workflows/pages.yml` builds the production site for https://manhattancrystalmarket.com (indexable, with a CNAME file) on every push to `main` and daily, and deploys it to
 GitHub Pages. Requires Settings > Pages > Build and deployment > Source = "GitHub Actions".
 When going live on the domain: drop `--preview`, set `--site=https://manhattancrystalmarket.com`, remove `--base`.
 
