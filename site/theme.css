@@ -1,0 +1,4 @@
+:root{--ink:#101418;--onink:#ffffff;--paper:#f5f2ec;--card:#ffffff;--soft:#efe9ff;--muted:#5d6670;--line:#e3ddd2;--accent:#c9a227;--onaccent:#101418;--accentdark:#6a4fe0;--focus:#7b5cff;
+--display:Fraunces,Georgia,serif;--body:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--r:14px;--btnr:999px}
+.hero{background:radial-gradient(1200px 500px at 85% 10%,#7b5cff55,transparent 60%),radial-gradient(800px 400px at 10% 100%,#2fb39a44,transparent 60%),#1b2228;border-bottom:6px solid #c9a227}
+.collage img{border-radius:50% 50% 14px 14px}
