@@ -1,0 +1,7 @@
+.netlify/
+__pycache__/
+dist/
+data/
+*.zip
+.env
+.env.*
