@@ -27,6 +27,7 @@ jobs:
       - name: Fetch catalog and build (preview, noindex, subpath)
         run: |
           python3 scripts/fetch.py
+          python3 scripts/pickup.py
           python3 scripts/build.py --preview --base=/${{ github.event.repository.name }} --site=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
