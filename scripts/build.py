@@ -466,7 +466,7 @@ policy('/privacy/', 'Privacy Policy', 'privacy-policy', 'This site does not use 
 policy('/terms/', 'Terms of Service', 'terms-of-service', 'Purchases made through this site are completed on Shopify and governed by the terms below.')
 
 # 404
-page('/404.html', f'Page not found | {BRAND}', 'Page not found', '<section class="wrap prose"><h1>That aisle is empty</h1><p>The page you were looking for may have sold out or moved.</p><p><a class="btn" href="/shop/">Back to the market</a></p></section>', canonical=False)
+page('/404.html', f'Page not found | {BRAND}', 'Page not found', '<script>(function(){var p=location.pathname,b="/manhattancrystalmarket";if(p.indexOf(b+"/")===0||p===b){location.replace((p.slice(b.length)||"/")+location.search+location.hash);}})();</script><section class="wrap prose"><h1>That aisle is empty</h1><p>The page you were looking for may have sold out or moved.</p><p><a class="btn" href="/shop/">Back to the market</a></p></section>', canonical=False)
 
 # sitemap + robots
 urls = ['/', '/visit/', '/crystal-shop-near-union-square/', '/shop/', '/about/', '/shipping/', '/returns/', '/privacy/', '/terms/'] + [f'/shop/{CAT_SLUG[k]}/' for k in CATS] + [f"/products/{x['handle']}/" for x in products]
