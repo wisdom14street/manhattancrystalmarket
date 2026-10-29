@@ -213,7 +213,7 @@ FAQ_H1 = 'Crystal floor FAQ'
 def FAQ(S):
     return [('Where is Manhattan Crystal Market?', f'At {S.STORE_ADDR}, on 14th Street just west of Fifth Avenue, about a 4-minute walk from the 14 St&ndash;Union Square subway station.'),
             ('What are your hours?', 'Monday to Thursday 11 AM to 8 PM, Friday and Saturday 11 AM to 9 PM, Sunday 11 AM to 7 PM. Holiday hours may differ.'),
-            ('Can I reserve a crystal online and pick it up?', 'Yes. Tap Buy now, choose Pickup at checkout, and come in once you get the email saying your order is ready.' + (f' Orders are {S.READY.lower()}.' if S.READY else '')),
+            ('Can I reserve a crystal online and pick it up?', 'Yes. Add it to your cart, choose Pickup at checkout, and come in once you get the email saying your order is ready.' + (f' Orders are {S.READY.lower()}.' if S.READY else '')),
             ('Will my crystal look exactly like the photo?', 'Natural stones vary in color, pattern and size. Where a listing shows a specific piece, that is the piece you get; for assorted items, expect small differences. Call us if you want a description first.'),
             ('Do you ship?', 'Yes, from New York City. Shipping options and costs are shown at checkout before you pay.'),
             ('How do I choose a crystal?', 'Many people start with a stone whose color or tradition speaks to them. Our <a href="/crystal-finder/">crystal finder</a> suggests in-stock pieces, and the <a href="/stones/">stones A to Z</a> page lists everything we carry.'),

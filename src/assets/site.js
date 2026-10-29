@@ -11,7 +11,9 @@
     if(f.brand&&!f.brand.includes(x.b))return false;if(f.style&&!f.style.includes(x.s))return false;
     if(f.maxp!=null&&x.p>=f.maxp)return false;if(f.minp!=null&&x.p<f.minp)return false;if(f.multi&&!x.m)return false;if(f.gift&&!x.g)return false;
     if(f.q&&!new RegExp(f.q,'i').test(x.t))return false;return true}
-  const card=(x,m)=>`<a class="card" href="/products/${x.h}/"><div class="ph"><img loading="lazy" decoding="async" src="${esc(x.i)}" alt="${esc(x.t)}" width="400" height="400"></div><div class="meta"><span class="tag" style="--c:${m.aisles[x.c].color}">${esc(x.f?m.fams[x.f]:m.aisles[x.c].name)}</span><h3>${esc(x.t)}</h3><p class="price">${x.n>1?'<small>'+x.n+' options from</small> ':''}${x.o?'<s>'+money(x.o)+'</s> ':''}${money(x.p)}</p></div></a>`;
+  const card0=(x,m)=>`<a class="card" href="/products/${x.h}/"><div class="ph"><img loading="lazy" decoding="async" src="${esc(x.i)}" alt="${esc(x.t)}" width="400" height="400"></div><div class="meta"><span class="tag" style="--c:${m.aisles[x.c].color}">${esc(x.f?m.fams[x.f]:m.aisles[x.c].name)}</span><h3>${esc(x.t)}</h3><p class="price">${x.n>1?'<small>'+x.n+' options from</small> ':''}${x.o?'<s>'+money(x.o)+'</s> ':''}${money(x.p)}</p></div></a>`;
+  const atc=x=>x.v?`<button type="button" class="atc" data-atc data-v="${x.v}" data-h="${esc(x.h)}" data-t="${esc(x.t)}" data-p="${x.p}" data-i="${esc(x.i)}" data-c="${esc(x.c)}" data-k="${esc(x.k)}" aria-label="Add ${esc(x.t)} to cart">Add to cart</button>`:`<a class="atc" href="/products/${esc(x.h)}/" aria-label="Choose options for ${esc(x.t)}">Choose options</a>`;
+  const card=(x,m)=>'<div class="cw">'+card0(x,m)+atc(x)+'</div>';
   const words=q=>q.toLowerCase().split(/\s+/).filter(Boolean);
   const hit=(x,m,ws)=>{const s=(x.t+' '+(m.brands[x.b]||'')).toLowerCase();return ws.every(w=>s.includes(w))};
   // header search suggestions
@@ -55,9 +57,9 @@
   const P=window.NI_PRODUCT;
   if(P){
     const buy=$('#buy'),price=$('#price'),stock=$('#stock'),sel=$('#variant'),cmp=$('#cmp');let variants=null;
-    function setV(id){const v=variants&&variants.find(v=>String(v.id)===String(id));buy.href=`${P.shop}/cart/${id}:1${P.cartAttr}`;if(!v)return;
+    function setV(id){const v=variants&&variants.find(v=>String(v.id)===String(id));buy.dataset.v=id;if(sel){const o=sel.options[sel.selectedIndex];buy.dataset.vt=o?o.textContent.replace(/ \(sold out\)$/,''):''}if(!v)return;buy.dataset.p=(v.price/100).toFixed(2);buy.dataset.max=(v.quantity_rule&&v.quantity_rule.max)||'';
       price.textContent=money(v.price/100);if(v.compare_at_price&&v.compare_at_price>v.price){cmp.hidden=false;cmp.textContent=money(v.compare_at_price/100)}else cmp.hidden=true;
-      stock.classList.toggle('out',!v.available);stock.querySelector('span').textContent=v.available?'In stock':'Sold out';buy.textContent=v.available?'Buy now':'Sold out';buy.setAttribute('aria-disabled',String(!v.available))}
+      stock.classList.toggle('out',!v.available);stock.querySelector('span').textContent=v.available?'In stock':'Sold out';buy.textContent=v.available?'Add to cart':'Sold out';buy.disabled=!v.available;buy.setAttribute('aria-disabled',String(!v.available))}
     if(sel)sel.onchange=e=>setV(e.target.value);
     fetch(`${P.shop}/products/${P.handle}.js`).then(r=>r.ok?r.json():Promise.reject(r.status)).then(p=>{variants=p.variants;
       if(sel)[...sel.options].forEach(o=>{const v=variants.find(v=>String(v.id)===o.value);if(v)o.disabled=!v.available});

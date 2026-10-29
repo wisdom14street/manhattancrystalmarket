@@ -30,6 +30,29 @@ BRAND = CFG['brand']; LEGAL = f'{BRAND} is a brand of Wealth Edge Ventures Inc.'
 SHOP = 'https://namastebookshop.com'
 CART_ATTR = '?attributes%5BStorefront%5D=' + CFG['storefront'].replace(' ', '%20')
 E = html.escape
+CART_DOMAIN = SITE.split('://', 1)[-1].split('/')[0].removeprefix('www.')
+def single_vid(x):
+    """variant id when a card can go straight to the cart (one listing, one in-stock option), else 0"""
+    av = [v for v in x['variants'] if v['available']]
+    return av[0]['id'] if len(x['group']) == 1 and len(av) == 1 else 0
+def atc_btn(x):
+    vid = single_vid(x)
+    if not vid: return f'<a class="atc" href="/products/{x["handle"]}/" aria-label="Choose options for {E(x["title"])}">Choose options</a>'
+    v = next(v for v in x['variants'] if v['id'] == vid)
+    return (f'<button type="button" class="atc" data-atc data-v="{vid}" data-h="{x["handle"]}" data-t="{E(x["title"])}" data-p="{float(v["price"]):.2f}" '
+            f'data-i="{E(img(x["images"][0], 400))}" data-c="{x["aisle"]}" data-k="{x["base"]}" aria-label="Add {E(x["title"])} to cart">Add to cart</button>')
+CART_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>'
+_CART_CFG = None
+def cart_boot():
+    global _CART_CFG
+    if _CART_CFG is None:
+        _CART_CFG = json.dumps({'shop': SHOP, 'shopName': 'namastebookshop.com', 'attr': CART_ATTR, 'brand': BRAND, 'domain': CART_DOMAIN,
+                                'ref': CART_DOMAIN.split('.')[0], 'pickup': bool(PICKUP_ON), 'ready': READY, 'street': STORE_STREET, 'addr': STORE_ADDR,
+                                'pair': getattr(C, 'PAIR', {}), 'pairTitle': getattr(C, 'CART_PAIR_TITLE', 'Goes well with your cart')}).replace('</', '<\\/')
+    return (f'<div class="cdim" data-cart-close hidden></div><aside id="cart" class="cdrawer" role="dialog" aria-modal="true" aria-labelledby="ctitle" hidden>'
+            f'<div class="chead"><h2 id="ctitle">Your cart</h2><button type="button" class="cx" data-cart-close aria-label="Close cart">&times;</button></div>'
+            f'<p class="cmsg" id="cmsg" role="status" aria-live="polite"></p><div class="cbody" data-cart-body></div></aside>'
+            f'<script>window.NI_CART={_CART_CFG}</script><script src="/assets/cart.js" defer></script>')
 STORE_STREET = '2 West 14th Street'; STORE_CITY, STORE_REGION, STORE_ZIP = 'New York', 'NY', '10011'
 STORE_ADDR = f'{STORE_STREET}, {STORE_CITY}, {STORE_REGION} {STORE_ZIP}'
 PHONE, TEL = '646-876-1401', '+16468761401'
@@ -203,6 +226,7 @@ def nav():
     return f'''<a class="skip" href="#main">Skip to content</a><header class="top"><div class="bar"><a href="/visit/">{E(C.BAR_TEXT)}</a><span>Open daily from 11 AM</span>{'<span>Reserve online, pick up in store</span>' if PICKUP_ON else ''}</div>
 <div class="nav wrap"><a class="logo" href="/" aria-label="{E(BRAND)} home">{logo()}</a>
 <form class="search" action="/shop/" role="search" autocomplete="off"><label class="sr" for="hq">Search {E(BRAND)}</label><input id="hq" name="q" type="search" placeholder="{E(C.SEARCH_PLACEHOLDER)}" aria-autocomplete="list" aria-controls="sugg" aria-expanded="false"><ul id="sugg" class="sugg" role="listbox" hidden></ul></form>
+<a class="cartbtn" href="/cart/" data-cart-open aria-label="Cart, 0 items">{CART_ICON}<span class="cartn" data-cart-count hidden>0</span></a>
 <button class="menu" aria-label="Menu" aria-expanded="false" aria-controls="mainnav"><span></span><span></span></button>
 <nav class="links" id="mainnav" aria-label="Main"><a href="/visit/" class="vlink">Visit</a><a href="/shop/">Shop all</a>{links}<a href="/brands/">Brands</a>{f'<a href="/{C.QUIZ["slug"]}/">{E(C.QUIZ["nav"])}</a>' if C.QUIZ else ''}</nav></div></header>'''
 def footer():
@@ -230,20 +254,21 @@ def page(path, title, desc, body, extra_head='', canonical=True, index=True, og_
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{E(title)}"><meta name="twitter:description" content="{E(desc)}"><meta name="twitter:image" content="{E(ogi)}">
 <meta name="theme-color" content="{CFG['theme']['ink']}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
 <link rel="preconnect" href="https://cdn.shopify.com"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="{CFG['theme']['fonts']}" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/theme.css">{extra_head}</head>
-<body>{nav()}<main id="main">{body}</main>{footer()}<div class="actionbar"><a href="tel:{TEL}">Call</a><a href="{DIRECTIONS}" rel="noopener" target="_blank">Directions</a><a href="/visit/">Hours</a></div><script src="/assets/site.js" defer></script></body></html>'''
+<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/cart.css">{extra_head}</head>
+<body>{nav()}<main id="main">{body}</main>{footer()}<div class="actionbar"><a href="tel:{TEL}">Call</a><a href="{DIRECTIONS}" rel="noopener" target="_blank">Directions</a><a href="/visit/">Hours</a></div>{cart_boot()}<script src="/assets/site.js" defer></script></body></html>'''
     out = os.path.join(DIST, path.strip('/'), 'index.html') if path.endswith('/') else os.path.join(DIST, path.strip('/'))
     os.makedirs(os.path.dirname(out), exist_ok=True)
     open(out, 'w').write(doc)
     if index and canonical: SITEMAP.append(path)
 
 def tag_of(x): return FAM_NAME.get(x['family']) or AISLES[x['aisle']][0]
-def card(x, eager=False):
+def _card(x, eager=False):
     n = len(x['group'])
     pre = f'<small>{n} options from</small> ' if n > 1 else (f'<s>{money(x["compare"])}</s> ' if x['compare'] else '')
     u = x['images'][0]
     return (f'<a class="card" href="/products/{x["handle"]}/"><div class="ph"><img {"" if eager else "loading=\"lazy\" "}decoding="async" src="{img(u,400)}" srcset="{srcset(u,(300,400,600))}" sizes="(min-width:1050px) 25vw,(min-width:700px) 33vw,50vw" alt="{E(x["title"])}" width="400" height="400"></div>'
             f'<div class="meta"><span class="tag" style="--c:{AISLES[x["aisle"]][4]}">{E(tag_of(x))}</span><h3>{E(x["title"])}</h3><p class="price">{pre}{money(x["price"])}</p></div></a>')
+def card(x, eager=False): return f'<div class="cw">{_card(x, eager)}{atc_btn(x)}</div>'
 S.card = card
 def grid(xs): return f'<div class="grid">{"".join(card(x) for x in xs)}</div>'
 S.grid = grid
@@ -277,7 +302,7 @@ json.dump({"name": BRAND, "short_name": CFG.get('short_name', BRAND), "start_url
           open(os.path.join(DIST, 'site.webmanifest'), 'w'))
 
 compact = [{'h': x['handle'], 't': x['title'], 'c': x['aisle'], 'k': x['base'], 'f': x['family'], 'b': x['brand'], 's': x['style'], 'p': x['price'],
-            'o': x['compare'] if len(x['group']) == 1 else None, 'n': len(x['group']), 'i': img(x['images'][0], 400), 'm': 1 if x['multi'] else 0,
+            'o': x['compare'] if len(x['group']) == 1 else None, 'n': len(x['group']), 'i': img(x['images'][0], 400), 'v': single_vid(x), 'm': 1 if x['multi'] else 0,
             'g': 1 if x['gift'] else 0, 'x': 1 if x['noimg'] else 0, 'r': round(min(y['rank'] for y in x['group']), 4), 'd': max(y['created'] for y in x['group'])[:10]} for x in leaders]
 json.dump(compact, open(os.path.join(DIST, 'data', 'catalog.json'), 'w'), separators=(',', ':'))
 json.dump({'aisles': {k: {'name': AISLES[k][0], 'slug': AISLES[k][2], 'color': AISLES[k][4]} for k in AISLE_KEYS}, 'fams': FAM_NAME,
@@ -422,14 +447,14 @@ for x in products:
                      **({"availableAtOrFrom": {"@id": SITE + '/#store'}} if x['pickup'] else {})}}
     cmp_ = f'<s id="cmp">{money(x["compare"])}</s>' if x['compare'] else '<s id="cmp" hidden></s>'
     btns = f'<div class="pbtns"><a href="{DIRECTIONS}" rel="noopener" target="_blank">Directions</a><a href="tel:{TEL}">Call</a><a href="/visit/">Hours</a></div>'
-    pk = (f'<div class="pickup"><h2>Reserve online, pick up in store</h2><p>Pickup available at <b>{STORE_ADDR}</b>, steps from Union Square. {E(x["pickup"]["ready"])}.</p><p class="small">Tap Buy now, then choose <b>Pickup</b> at checkout. Questions? Call <a href="tel:{TEL}">{PHONE}</a>.</p>{btns}</div>'
+    pk = (f'<div class="pickup"><h2>Reserve online, pick up in store</h2><p>Pickup available at <b>{STORE_ADDR}</b>, steps from Union Square. {E(x["pickup"]["ready"])}.</p><p class="small">Add it to your cart, check out, then choose <b>Pickup</b>. Questions? Call <a href="tel:{TEL}">{PHONE}</a>.</p>{btns}</div>'
           if x['pickup'] else f'<div class="pickup"><h2>See it in person</h2><p>Visit us at <b>{STORE_ADDR}</b>, steps from Union Square. Call <a href="tel:{TEL}">{PHONE}</a> before you come to check it is in stock.</p>{btns}</div>')
     rows = ''
     for title, xs in ((C.REL_BRAND.format(brand=BR.NAME.get(x['brand'], '')), same_brand), (C.REL_SCENT.format(scent=FAM_NAME.get(x['family'], '').lower()), same_scent), (C.REL_PAIR, pair), (C.REL_MORE.format(aisle=a[0].lower()), more)):
         if xs: rows += f'<section class="wrap"><div class="sechead"><h2>{E(title)}</h2></div>{grid(xs)}</section>'
     body = f'''{crumbs_html(cr)}<section class="wrap pdp" data-handle="{x['handle']}"><div class="gallery"><div class="main"><img id="mainimg" src="{img(imgs[0],1200)}" srcset="{srcset(imgs[0],(600,900,1200))}" sizes="(min-width:900px) 55vw,100vw" alt="{E(x['title'])}" width="1200" height="1200" fetchpriority="high"></div>{f'<div class="thumbs">{gallery}</div>' if len(imgs)>1 else ''}</div>
 <div class="info"><span class="tag" style="--c:{a[4]}">{E(a[0])}</span><h1>{E(x['title'])}</h1><p class="pprice">{cmp_} <span id="price">{money(v0['price'])}</span></p><p class="stock" id="stock"><i></i><span>In stock</span></p>{opts}{sibs}
-<a class="btn buy" id="buy" href="{SHOP}/cart/{v0['id']}:1{CART_ATTR}" rel="nofollow">Buy now</a>
+<button type="button" class="btn buy" id="buy" data-atc data-v="{v0['id']}" data-h="{x['handle']}" data-t="{E(x['title'])}" data-vt="{E(v0['title']) if len(x['variants']) > 1 else ''}" data-p="{float(v0['price']):.2f}" data-i="{E(img(imgs[0], 400))}" data-c="{x['aisle']}" data-k="{x['base']}">Add to cart</button>
 <ul class="trust"><li>Secure Shopify checkout</li><li>Ships from New York City</li>{"<li>In-store pickup at 2 W 14th St</li>" if x["pickup"] else ""}<li>Open daily from 11 AM</li></ul>
 <p class="note">Checkout opens on Shopify (namastebookshop.com), where you can choose shipping{" or in-store pickup" if x['pickup'] else ""} and review your order before paying.</p>
 {pk}<div class="desc">{''.join(f'<p>{s}</p>' for s in desc)}</div><dl class="facts">{''.join(f'<div><dt>{p}</dt><dd>{q}</dd></div>' for p, q in facts)}</dl><p class="small"><a href="/shipping/">Shipping</a> &middot; <a href="/returns/">Returns</a></p></div></section>{rows}'''
@@ -449,7 +474,7 @@ TRANSIT = '''<ul class="transit"><li><b>14 St&ndash;Union Square</b> <span class
 S.TRANSIT = TRANSIT
 info('/visit/', C.VISIT_TITLE, C.VISIT_DESC(S), 'Visit us at 2 West 14th Street', f'''<p class="lead">{C.VISIT_LEAD(S)}</p>{visit_block(full=True)}<h2>Getting here</h2>{TRANSIT}
 <h2>{"Reserve online, pick up in store" if PICKUP_ON else "Looking for something specific?"}</h2>
-{f"<ol><li>Find what you want in the <a href='/shop/'>online shop</a>.</li><li>Tap Buy now and choose <b>Pickup</b> at checkout.</li><li>Orders are {READY.lower()}. Come to {STORE_ADDR} during open hours.</li></ol><p>Questions about a pickup? Call <a href='tel:{TEL}'>{PHONE}</a>.</p>" if PICKUP_ON else f"<p>Call <a href='tel:{TEL}'>{PHONE}</a> before you come in.</p>"}{review_block()}''', ldjson(store_ld()))
+{f"<ol><li>Find what you want in the <a href='/shop/'>online shop</a>.</li><li>Add it to your cart, tap Check out and choose <b>Pickup</b>.</li><li>Orders are {READY.lower()}. Come to {STORE_ADDR} during open hours.</li></ol><p>Questions about a pickup? Call <a href='tel:{TEL}'>{PHONE}</a>.</p>" if PICKUP_ON else f"<p>Call <a href='tel:{TEL}'>{PHONE}</a> before you come in.</p>"}{review_block()}''', ldjson(store_ld()))
 faqs = C.FAQ(S)
 info('/faq/', 'Frequently Asked Questions', C.FAQ_DESC(S), C.FAQ_H1, faq_html(faqs), ldjson(faq_ld(faqs)))
 for g in C.GUIDES(S):
@@ -465,6 +490,10 @@ policy('/shipping/', 'Shipping Policy', 'shipping-policy', f'Orders ship from Ne
 policy('/returns/', 'Refund Policy', 'refund-policy', 'If something is not right with your order, the refund policy below explains eligibility, timing and how to start a return.')
 policy('/privacy/', 'Privacy Policy', 'privacy-policy', 'This site does not use accounts or collect payment details; checkout and payment are handled by Shopify. The privacy policy below covers the data collected at checkout.')
 policy('/terms/', 'Terms of Service', 'terms-of-service', 'Purchases made through this site are completed on Shopify and governed by the terms below.')
+page('/cart/', f'Your cart | {BRAND}', f'Review your {BRAND} cart and check out securely, or choose free pickup at {STORE_ADDR}.',
+     f'<section class="wrap prose cartpage"><h1>Your cart</h1><p class="cmsg" role="status" aria-live="polite"></p><div data-cart-page><div class="cbody" data-cart-body><p>Loading your cart&hellip;</p></div></div>'
+     f'<noscript><p>The cart needs JavaScript. Call <a href="tel:{TEL}">{PHONE}</a> and we will set your order aside.</p></noscript></section>',
+     '<meta name="robots" content="noindex">', canonical=False, index=False)
 page('/404.html', f'Page not found | {BRAND}', 'Page not found', f'<section class="wrap prose"><h1>{E(C.NOT_FOUND)}</h1><p>The page you were looking for may have sold out or moved.</p><p><a class="btn" href="/shop/">Back to the shop</a></p></section>', canonical=False, index=False)
 
 # ---- sitemap / robots / CNAME ----
