@@ -13,7 +13,7 @@
     if(f.q&&!new RegExp(f.q,'i').test(x.t))return false;return true}
   const card0=(x,m)=>`<a class="card" href="/products/${x.h}/"><div class="ph"><img loading="lazy" decoding="async" src="${esc(x.i)}" alt="${esc(x.t)}" width="400" height="400"></div><div class="meta"><span class="tag" style="--c:${m.aisles[x.c].color}">${esc(x.f?m.fams[x.f]:m.aisles[x.c].name)}</span><h3>${esc(x.t)}</h3><p class="price">${x.n>1?'<small>'+x.n+' options from</small> ':''}${x.o?'<s>'+money(x.o)+'</s> ':''}${money(x.p)}</p></div></a>`;
   const atc=x=>x.v?`<button type="button" class="atc" data-atc data-v="${x.v}" data-h="${esc(x.h)}" data-t="${esc(x.t)}" data-p="${x.p}" data-i="${esc(x.i)}" data-c="${esc(x.c)}" data-k="${esc(x.k)}" aria-label="Add ${esc(x.t)} to cart">Add to cart</button>`:`<a class="atc" href="/products/${esc(x.h)}/" aria-label="Choose options for ${esc(x.t)}">Choose options</a>`;
-  const card=(x,m)=>'<div class="cw">'+card0(x,m)+atc(x)+'</div>';
+  const card=(x,m)=>card0(x,m).replace('<a class="card" ','<div class="card"><a class="clink" ')+atc(x)+'</div>';
   const words=q=>q.toLowerCase().split(/\s+/).filter(Boolean);
   const hit=(x,m,ws)=>{const s=(x.t+' '+(m.brands[x.b]||'')).toLowerCase();return ws.every(w=>s.includes(w))};
   // header search suggestions

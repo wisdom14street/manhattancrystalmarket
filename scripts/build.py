@@ -254,8 +254,8 @@ def page(path, title, desc, body, extra_head='', canonical=True, index=True, og_
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{E(title)}"><meta name="twitter:description" content="{E(desc)}"><meta name="twitter:image" content="{E(ogi)}">
 <meta name="theme-color" content="{CFG['theme']['ink']}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
 <link rel="preconnect" href="https://cdn.shopify.com"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="{CFG['theme']['fonts']}" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/cart.css">{extra_head}</head>
-<body>{nav()}<main id="main">{body}</main>{footer()}<div class="actionbar"><a href="tel:{TEL}">Call</a><a href="{DIRECTIONS}" rel="noopener" target="_blank">Directions</a><a href="/visit/">Hours</a></div>{cart_boot()}<script src="/assets/site.js" defer></script></body></html>'''
+<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/cart.css"><link rel="stylesheet" href="/assets/ux.css">{extra_head}</head>
+<body>{nav()}<main id="main">{body}</main>{footer()}<div class="actionbar"><a href="tel:{TEL}">Call</a><a href="{DIRECTIONS}" rel="noopener" target="_blank">Directions</a><a href="/visit/">Hours</a></div>{cart_boot()}<script src="/assets/site.js" defer></script><script src="/assets/ux.js" defer></script></body></html>'''
     out = os.path.join(DIST, path.strip('/'), 'index.html') if path.endswith('/') else os.path.join(DIST, path.strip('/'))
     os.makedirs(os.path.dirname(out), exist_ok=True)
     open(out, 'w').write(doc)
@@ -268,7 +268,7 @@ def _card(x, eager=False):
     u = x['images'][0]
     return (f'<a class="card" href="/products/{x["handle"]}/"><div class="ph"><img {"" if eager else "loading=\"lazy\" "}decoding="async" src="{img(u,400)}" srcset="{srcset(u,(300,400,600))}" sizes="(min-width:1050px) 25vw,(min-width:700px) 33vw,50vw" alt="{E(x["title"])}" width="400" height="400"></div>'
             f'<div class="meta"><span class="tag" style="--c:{AISLES[x["aisle"]][4]}">{E(tag_of(x))}</span><h3>{E(x["title"])}</h3><p class="price">{pre}{money(x["price"])}</p></div></a>')
-def card(x, eager=False): return f'<div class="cw">{_card(x, eager)}{atc_btn(x)}</div>'
+def card(x, eager=False): return _card(x, eager).replace('<a class="card" ', '<div class="card"><a class="clink" ', 1) + atc_btn(x) + '</div>'
 S.card = card
 def grid(xs): return f'<div class="grid">{"".join(card(x) for x in xs)}</div>'
 S.grid = grid
