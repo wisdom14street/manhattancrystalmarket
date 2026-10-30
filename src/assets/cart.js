@@ -5,6 +5,8 @@
   const $=(s,r)=>(r||document).querySelector(s),$$=(s,r)=>[...(r||document).querySelectorAll(s)];
   const money=v=>'$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ga=(n,p)=>{try{if(typeof window.gtag==='function')window.gtag('event',n,p)}catch(_){}};   // GA4, never blocks the cart
+  const gaItem=x=>({item_id:String(x.v),item_name:String(x.t||'')+(x.vt&&x.vt!=='Default Title'?' - '+x.vt:''),price:+x.p||0,quantity:+x.q||1,...(x.c?{item_category:x.c}:{})});
   const KEY='ni_cart_v1:'+C.domain,HARD_MAX=99,FRESH=10*60*1000;
   let items=load();
   function load(){try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&x.v&&x.q>0):[]}catch(e){return[]}}
@@ -95,12 +97,13 @@ ${pick}${url?`<a class="btn ccheck" href="${esc(url)}" rel="nofollow" data-check
       if(e.shiftKey&&document.activeElement===f[0]){f[f.length-1].focus();e.preventDefault()}else if(!e.shiftKey&&document.activeElement===f[f.length-1]){f[0].focus();e.preventDefault()}}});
   document.addEventListener('click',e=>{
     const t=e.target.closest('[data-atc],[data-atc-items],[data-cart-open],[data-cart-close],[data-inc],[data-dec],[data-rm],[data-checkout]');if(!t)return;
-    if(t.hasAttribute('data-checkout')){const u=checkoutUrl();if(u)t.href=u;return}
+    if(t.hasAttribute('data-checkout')){const u=checkoutUrl();if(u)t.href=u;try{const l=live();if(l.length)ga('begin_checkout',{currency:'USD',value:Math.round(subtotal()*100)/100,items:l.map(gaItem),transport_type:'beacon'})}catch(_){}return}
     if(t.hasAttribute('data-cart-open')){e.preventDefault();open();return}
     if(t.hasAttribute('data-cart-close')){if(drawer&&!drawer.hidden){e.preventDefault();close()}return}
     if(t.hasAttribute('data-atc')||t.hasAttribute('data-atc-items')){e.preventDefault();if(t.disabled||t.getAttribute('aria-disabled')==='true')return;
       let list;try{list=t.hasAttribute('data-atc-items')?JSON.parse(t.getAttribute('data-atc-items')):[t.dataset]}catch(_){return}
       list.forEach(d=>add(d,+(d.q||1)));
+      try{const gi=list.map(d=>gaItem({v:d.v,t:d.t,vt:d.vt,p:d.p,q:+(d.q||1),c:d.c}));ga('add_to_cart',{currency:'USD',value:Math.round(gi.reduce((s,x)=>s+x.price*x.quantity,0)*100)/100,items:gi})}catch(_){}
       const lab=t.textContent;t.classList.add('added');t.textContent='Added ✓';setTimeout(()=>{t.textContent=lab;t.classList.remove('added')},1600);
       open(list.length>1?`Added ${list.length} items to your cart.`:`Added ${list[0].t} to your cart.`);return}
     const row=t.closest('[data-v]');const x=row&&items.find(y=>String(y.v)===row.dataset.v);if(!x)return;
