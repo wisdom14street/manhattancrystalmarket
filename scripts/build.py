@@ -192,7 +192,7 @@ def visit_block(full=False):
     pk = (f'<p><b>Reserve online, pick up in store.</b> Choose Pickup at checkout; orders are {READY.lower()}.</p>' if PICKUP_ON else
           f'<p><b>Looking for something specific?</b> Call {PHONE} before you come in.</p>')
     return f'''<div class="visit"><div class="vinfo"><p class="eyebrow dark">{E(C.VISIT_EYEBROW)}</p><h2>{STORE_STREET}</h2>
-<p class="addr">{STORE_ADDR}<br>On 14th Street just west of Fifth Avenue, about a 4-minute walk from Union Square.</p>
+<p class="addr">{STORE_ADDR}<br>Inside <b>Namaste Bookshop</b>: look for the Namaste Bookshop sign on the south side of 14th Street, just west of Fifth Avenue, about a 4-minute walk from Union Square.</p>
 <h3>Hours</h3>{hours_html()}<p class="small">Holiday hours may differ. Call {PHONE} to check before a special trip.</p>
 {pk}{visit_buttons()}{'' if full else '<p><a href="/visit/">Directions, subway lines and pickup details &rarr;</a></p>'}</div>
 <div class="vmap"><iframe title="Map to {STORE_ADDR}" src="{MAP_EMBED}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div></div>'''
@@ -203,7 +203,7 @@ def store_ld():
             "address": {"@type": "PostalAddress", "streetAddress": STORE_STREET, "addressLocality": STORE_CITY, "addressRegion": STORE_REGION, "postalCode": STORE_ZIP, "addressCountry": "US"},
             "geo": {"@type": "GeoCoordinates", "latitude": GEO[0], "longitude": GEO[1]}, "hasMap": MAP_LINK,
             "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": d, "opens": o, "closes": c} for d, o, c in HOURS_LD],
-            "parentOrganization": {"@type": "Organization", "name": "Wealth Edge Ventures Inc."}}
+            "parentOrganization": {"@type": "Organization", "name": "Wealth Edge Ventures Inc."}, "containedInPlace": BOOKSHOP}
 def ldjson(o): return f'<script type="application/ld+json">{json.dumps(o)}</script>'
 def faq_ld(qas): return {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": re.sub('<[^>]+>', '', q), "acceptedAnswer": {"@type": "Answer", "text": re.sub('<[^>]+>', '', a)}} for q, a in qas]}
 def faq_html(qas): return '<div class="faq">' + ''.join(f'<details><summary>{q}</summary><div>{a}</div></details>' for q, a in qas) + '</div>'
@@ -223,7 +223,7 @@ S.review_block = review_block
 def logo(): return f'<span class="mark" aria-hidden="true">{C.LOGO_SVG}</span><span class="wordmark">{C.WORDMARK}</span>'
 def nav():
     links = ''.join(f'<a href="/shop/{AISLES[k][2]}/"><i style="background:{AISLES[k][4]}"></i>{E(AISLES[k][1])}</a>' for k in AISLE_KEYS)
-    return f'''<a class="skip" href="#main">Skip to content</a><header class="top"><div class="bar"><a href="/visit/">{E(C.BAR_TEXT)}</a><span>Open daily from 11 AM</span>{'<span>Reserve online, pick up in store</span>' if PICKUP_ON else ''}</div>
+    return f'''<a class="skip" href="#main">Skip to content</a><header class="top"><div class="bar"><a href="/visit/">{P2C["bar"]}</a><span>Open daily from 11 AM</span>{'<span>Reserve online, pick up in store</span>' if PICKUP_ON else ''}</div>
 <div class="nav wrap"><a class="logo" href="/" aria-label="{E(BRAND)} home">{logo()}</a>
 <form class="search" action="/shop/" role="search" autocomplete="off"><label class="sr" for="hq">Search {E(BRAND)}</label><input id="hq" name="q" type="search" placeholder="{E(C.SEARCH_PLACEHOLDER)}" aria-autocomplete="list" aria-controls="sugg" aria-expanded="false"><ul id="sugg" class="sugg" role="listbox" hidden></ul></form>
 <a class="cartbtn" href="/cart/" data-cart-open aria-label="Cart, 0 items">{CART_ICON}<span class="cartn" data-cart-count hidden>0</span></a>
@@ -233,14 +233,14 @@ def footer():
     sib = ''.join(f'<a href="{u}" rel="noopener">{E(n)}</a>' for n, u in CFG.get('siblings', []))
     expl = ''.join(f'<a href="{u}">{E(n)}</a>' for n, u in C.FOOTER_EXPLORE(S))
     return f'''<footer class="foot"><div class="wrap grid4">
-<div><a class="logo light" href="/">{logo()}</a><p class="legal">{LEGAL}</p><p class="small">{E(C.FOOT_BLURB)}</p>
+<div><a class="logo light" href="/">{logo()}</a><p class="legal">{LEGAL}</p><p class="small">{E(C.FOOT_BLURB)}</p><p class="small findnote">{P2C["foot"]} <a href="/visit/">How to find us &rarr;</a></p>
 <p class="small">Orders are checked out on Shopify through namastebookshop.com, which processes payment and ships from New York City.</p></div>
 <div><h2 class="fh">Shop</h2>{''.join(f'<a href="/shop/{AISLES[k][2]}/">{E(AISLES[k][0])}</a>' for k in AISLE_KEYS)}<a href="/brands/">Brands A&ndash;Z</a></div>
 <div><h2 class="fh">Explore</h2>{expl}<a href="/faq/">FAQ</a></div>
 <div><h2 class="fh">Visit</h2><p class="small foottxt">{STORE_ADDR}</p>{''.join(f'<p class="small foottxt">{d}: {h}</p>' for d, h in HOURS)}<a href="tel:{TEL}">Call {PHONE}</a><a href="{DIRECTIONS}" rel="noopener" target="_blank">Get directions</a><a href="/visit/">Visit &amp; pickup info</a>
 <h2 class="fh mt">Help</h2><a href="/about/">About us</a><a href="/shipping/">Shipping</a><a href="/returns/">Returns</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>
 {f'<h2 class="fh mt">Our other shops</h2>{sib}' if sib else ''}</div>
-</div><div class="wrap legalline">{LEGAL} &copy; {datetime.date.today().year} Wealth Edge Ventures Inc.</div></footer>'''
+</div>{p2_popular()}<div class="wrap legalline">{LEGAL} &copy; {datetime.date.today().year} Wealth Edge Ventures Inc.</div></footer>'''
 
 SITEMAP = []
 OG_DEFAULT = img(by_rank(photo(leaders))[0]['images'][0], 1200)
@@ -272,6 +272,88 @@ def card(x, eager=False): return _card(x, eager).replace('<a class="card" ', '<d
 S.card = card
 def grid(xs): return f'<div class="grid">{"".join(card(x) for x in xs)}</div>'
 S.grid = grid
+# ==== part2: find-us + sales upgrade (generated by cartkit/part2.py; copy lives in scripts/p2site.py) ====
+import p2site as P2
+P2C = P2.COPY
+BOOKSHOP = {"@type": "BookStore", "name": "Namaste Bookshop", "url": "https://namastebookshop.com", "telephone": TEL,
+            "address": {"@type": "PostalAddress", "streetAddress": STORE_STREET, "addressLocality": STORE_CITY, "addressRegion": STORE_REGION, "postalCode": STORE_ZIP, "addressCountry": "US"},
+            "geo": {"@type": "GeoCoordinates", "latitude": GEO[0], "longitude": GEO[1]}, "hasMap": MAP_LINK}
+INSTORE_LINE = 'In stock at Namaste Bookshop, 2 W 14th St, ready for pickup in about 2 hours'
+def p2_badges(compact=False):
+    return (f'<ul class="badges{" compact" if compact else ""}" aria-label="Shopping with {E(BRAND)}">'
+            + ''.join(f'<li><b>{E(t)}</b><span>{E(s)}</span></li>' for t, s in P2C['badges']) + '</ul>')
+def p2_chips():
+    out = []
+    for label, href, f in P2C['chips']:
+        n = sum(1 for x in products if match(x, f)) if f else 0
+        if f and not n: continue
+        out.append(f'<a class="chip" href="{href}">{E(label)}{f" <small>{n}</small>" if n else ""}</a>')
+    if not out: return ''
+    return f'<section class="wrap"><div class="sechead"><h2>{E(P2C["chips_title"])}</h2><a href="/shop/">Shop all &rarr;</a></div><div class="chips">{"".join(out)}</div></section>'
+def _p2_grid(spec, need_rank=False):
+    if not spec or (need_rank and not HAS_RANK): return ''
+    xs = by_rank(photo([x for x in leaders if match(x, spec.get('filter') or {})]))[:8]
+    if len(xs) < 4: return ''
+    return section({'type': 'grid', 'title': spec['title'], 'select': lambda S_: xs, 'href': spec['href'], 'link': spec['link'], 'intro': spec.get('intro', '')})
+def p2_home_top():
+    return (f'<section class="wrap">{p2_badges()}</section>' + p2_chips() + '<section class="wrap" data-recent hidden></section>' + _p2_grid(P2C.get('best'), True))
+def p2_gift(): return _p2_grid(P2C.get('gift'))
+def p2_item(y):
+    v = next(v for v in y['variants'] if v['id'] == single_vid(y))
+    return {'v': str(v['id']), 'h': y['handle'], 't': y['title'], 'p': f"{float(v['price']):.2f}", 'i': img(y['images'][0], 400), 'c': y['aisle'], 'k': y['base']}
+def p2_set(x, cands):
+    seen, picks = {id(x['group'])}, []
+    for y in cands:
+        if id(y['group']) in seen or not single_vid(y) or y['noimg']: continue
+        seen.add(id(y['group'])); picks.append(y)
+    lead = [x] if single_vid(x) else []
+    items = lead + picks[:3 - len(lead)]
+    if len(items) < 2: return ''
+    data = [p2_item(y) for y in items]
+    lis = ''.join(f'<li><label><input type="checkbox" checked aria-label="Include {E(y["title"])}"><img src="{img(y["images"][0], 120)}" alt="" width="56" height="56" loading="lazy">'
+                  f'<span>{"<b>This item:</b> " if y is x else ""}{E(y["title"])}</span><b>{money(d["p"])}</b></label></li>' for y, d in zip(items, data))
+    js_ = E(json.dumps(data))
+    return (f'<div class="bundle"><h2>Complete the set</h2><p class="small">{E(P2C["set_sub"])}</p><ul>{lis}</ul>'
+            f'<div class="btot"><span>Together: <b data-bundle-total>{money(sum(float(d["p"]) for d in data))}</b></span>'
+            f'<button type="button" class="btn" data-bundle="{js_}" data-atc-items="{js_}">Add all {len(items)} to cart</button></div></div>')
+def p2_instore(x): return f'<p class="instore">{INSTORE_LINE}. <a href="/visit/">How to find us</a></p>' if x['pickup'] else ''
+def p2_sticky(x, v0):
+    return (f'<div class="stickybuy" role="region" aria-label="Quick add to cart"><div><span class="sbt">{E(x["title"])}</span><b data-sb-price>{money(v0["price"])}</b></div>'
+            f'<button type="button" class="btn">Add to cart</button></div>')
+def p2_popular(): return '<nav class="wrap popular" aria-label="Popular on this site"><b>Popular:</b>' + ''.join(f'<a href="{h}">{E(l)}</a>' for l, h in P2C['popular']) + '</nav>'
+def p2_visit():
+    c = P2C
+    walk = lambda steps: '<ol class="walk">' + ''.join(f'<li>{s}</li>' for s in steps) + '</ol>'
+    pick = [f'Add what you want to your cart on {E(BRAND)}, then tap <b>Check out</b>.',
+            'Checkout opens on Shopify (namastebookshop.com). Choose <b>Pickup</b> instead of shipping; there is no pickup fee.',
+            f'Orders are {(READY or "usually ready the same day").lower()}. Wait for the ready-for-pickup email before you set out.',
+            f'Come to Namaste Bookshop at {STORE_STREET} during open hours and give the name on the order at the counter.']
+    return (f'<p class="lead">{c["visit_lead"]}</p>'
+            f'<div class="findbox"><h2>Look for the Namaste Bookshop sign</h2><p>{c["sign"]}</p>'
+            f'<p><b>{E(BRAND)}</b>, inside Namaste Bookshop<br>{STORE_ADDR}<br>South side of 14th Street, just west of Fifth Avenue, near Union Square</p>'
+            f'<div class="cta"><a class="btn" href="{DIRECTIONS}" rel="noopener" target="_blank">Open directions in Google Maps</a><a class="btn alt" href="tel:{TEL}">Call {PHONE}</a></div></div>'
+            f'{visit_block(full=True)}'
+            f'<h2>Walking from Union Square</h2>{walk(c["union"])}<h2>Walking from the Sixth Avenue stations</h2>{walk(c["sixth"])}'
+            f'<h2>Subway and bus lines nearby</h2>{TRANSIT}'
+            f'<h2>How pickup works</h2><p>{c["pickup_intro"]}</p>{walk(pick)}'
+            f'<h2>Visit questions</h2>{faq_html(c["vfaq"])}{review_block()}')
+AI_BOTS = ['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended',
+           'ClaudeBot', 'Claude-SearchBot', 'Claude-User', 'Applebot', 'Applebot-Extended', 'DuckDuckBot']
+def p2_robots():
+    return 'User-agent: *\nAllow: /\n\n' + ''.join(f'User-agent: {b}\nAllow: /\n\n' for b in AI_BOTS) + f'Sitemap: {SITE}/sitemap.xml\n'
+def p2_llms():
+    L = [f'# {BRAND}', '', f'> {P2C["llms"]}', '',
+         f'{BRAND} is a brand of Wealth Edge Ventures Inc. Its counter is inside Namaste Bookshop, {STORE_ADDR}: the south side of 14th Street, just west of Fifth Avenue, near Union Square in Manhattan. Phone {PHONE}.',
+         'Hours: ' + '; '.join(f'{d}, {h}' for d, h in HOURS) + '.',
+         f'Checkout runs on Shopify through namastebookshop.com, which takes payment and ships from New York City.' + (f' Free in-store pickup: choose Pickup at checkout; orders are {READY.lower()}.' if PICKUP_ON else ''),
+         f'About {S.ABOUT_N:,} items are listed. Prices and stock are refreshed daily, and product pages check live price and stock.', '',
+         '## Shop'] + [f'- [{AISLES[k][0]}]({SITE}/shop/{AISLES[k][2]}/): {AISLES[k][3]}' for k in AISLE_KEYS] + [
+         f'- [All products]({SITE}/shop/)', f'- [Brands A to Z]({SITE}/brands/)', '',
+         '## Visit and help', f'- [How to find us]({SITE}/visit/): walking routes, subway lines, hours and pickup steps', f'- [FAQ]({SITE}/faq/)',
+         f'- [About]({SITE}/about/)', f'- [Shipping]({SITE}/shipping/)', f'- [Returns]({SITE}/returns/)', '',
+         '## Optional', f'- [Sitemap]({SITE}/sitemap.xml)', f'- [Catalog JSON]({SITE}/data/catalog.json): one row per listing with handle (h), title (t), price in USD (p) and image (i)', '']
+    return '\n'.join(L)
+# ==== end part2 ====
 
 # ---------- build ----------
 if os.path.exists(DIST): shutil.rmtree(DIST)
@@ -342,8 +424,8 @@ def section(sec):
     return ''
 H = C.HERO(S)
 home = f'''<section class="hero"><div class="wrap hero-in"><div class="htext"><p class="eyebrow">{H['eyebrow']}</p><h1>{H['h1']}</h1><p class="lede">{H['lede']}</p>
-<div class="cta"><a class="btn" href="{DIRECTIONS}" rel="noopener" target="_blank">Get directions</a><a class="btn ghost" href="tel:{TEL}">Call {PHONE}</a><a class="btn ghost" href="/shop/">{E(H.get('shop_cta','Shop online'))}</a></div></div>{collage()}</div></section>
-{''.join(section(s) for s in C.HOME_SECTIONS)}'''
+<div class="cta"><a class="btn" href="{P2C['cta'][1]}">{E(P2C['cta'][0])} &rarr;</a><a class="btn ghost" href="/visit/">How to find us</a><a class="btn ghost" href="{DIRECTIONS}" rel="noopener" target="_blank">Directions</a></div><p class="heroloc">{P2C['heroloc']}</p></div>{collage()}</div></section>
+{p2_home_top()}{''.join(section(s) for s in C.HOME_SECTIONS[:2])}{p2_gift()}{''.join(section(s) for s in C.HOME_SECTIONS[2:])}'''
 page('/', C.HOME_TITLE(S), C.HOME_DESC(S), home, ldjson({"@context": "https://schema.org", "@type": "WebSite", "name": BRAND, "url": SITE + '/',
      "potentialAction": {"@type": "SearchAction", "target": SITE + "/shop/?q={search_term_string}", "query-input": "required name=search_term_string"}}) + ldjson(store_ld()))
 
@@ -438,6 +520,8 @@ for x in products:
         sibs = '<div class="sibs"><h2>Choose yours</h2><p class="small">Each option is a separate listing with its own price.</p>' + ''.join(
             f'<a class="sib{" on" if y is x else ""}" href="/products/{y["handle"]}/"{" aria-current=\"page\"" if y is x else ""}><img loading="lazy" src="{img(y["images"][0],120)}" alt="" width="60" height="60"><span>{E(y["label"])}</span><b>{money(y["price"])}</b></a>' for y in x['group']) + '</div>'
     desc = C.describe(S, x)
+    p2set = p2_set(x, rel(lambda y: y['base'] in pair_bases and bool(single_vid(y)) and not y['noimg'], n=6) + rel(lambda y: y['aisle'] == x['aisle'] and bool(single_vid(y)) and not y['noimg'], n=6))
+    p2tail = '<section class="wrap" data-recent hidden></section>' + p2_sticky(x, v0)
     cr = [('Home', '/'), ('Shop', '/shop/'), (a[0], f'/shop/{a[2]}/'), (x['title'], f"/products/{x['handle']}/")]
     ld = {"@context": "https://schema.org", "@type": "Product", "name": x['title'], "image": [SITE + u if u == NOIMG else img(u, 1200) for u in imgs[:3]], "sku": v0['sku'] or str(v0['id']),
           "brand": {"@type": "Brand", "name": BR.NAME.get(x['brand'], BRAND)}, "category": a[0], "url": f"{SITE}/products/{x['handle']}/",
@@ -447,17 +531,17 @@ for x in products:
                      **({"availableAtOrFrom": {"@id": SITE + '/#store'}} if x['pickup'] else {})}}
     cmp_ = f'<s id="cmp">{money(x["compare"])}</s>' if x['compare'] else '<s id="cmp" hidden></s>'
     btns = f'<div class="pbtns"><a href="{DIRECTIONS}" rel="noopener" target="_blank">Directions</a><a href="tel:{TEL}">Call</a><a href="/visit/">Hours</a></div>'
-    pk = (f'<div class="pickup"><h2>Reserve online, pick up in store</h2><p>Pickup available at <b>{STORE_ADDR}</b>, steps from Union Square. {E(x["pickup"]["ready"])}.</p><p class="small">Add it to your cart, check out, then choose <b>Pickup</b>. Questions? Call <a href="tel:{TEL}">{PHONE}</a>.</p>{btns}</div>'
+    pk = (f'<div class="pickup"><h2>Reserve online, pick up in store</h2><p>Pickup is inside <b>Namaste Bookshop, {STORE_STREET}</b>, on the south side of 14th Street just west of Fifth Avenue. {E(x["pickup"]["ready"])}.</p><p class="small">Add it to your cart, check out, then choose <b>Pickup</b>. Questions? Call <a href="tel:{TEL}">{PHONE}</a>.</p>{btns}</div>'
           if x['pickup'] else f'<div class="pickup"><h2>See it in person</h2><p>Visit us at <b>{STORE_ADDR}</b>, steps from Union Square. Call <a href="tel:{TEL}">{PHONE}</a> before you come to check it is in stock.</p>{btns}</div>')
     rows = ''
     for title, xs in ((C.REL_BRAND.format(brand=BR.NAME.get(x['brand'], '')), same_brand), (C.REL_SCENT.format(scent=FAM_NAME.get(x['family'], '').lower()), same_scent), (C.REL_PAIR, pair), (C.REL_MORE.format(aisle=a[0].lower()), more)):
         if xs: rows += f'<section class="wrap"><div class="sechead"><h2>{E(title)}</h2></div>{grid(xs)}</section>'
     body = f'''{crumbs_html(cr)}<section class="wrap pdp" data-handle="{x['handle']}"><div class="gallery"><div class="main"><img id="mainimg" src="{img(imgs[0],1200)}" srcset="{srcset(imgs[0],(600,900,1200))}" sizes="(min-width:900px) 55vw,100vw" alt="{E(x['title'])}" width="1200" height="1200" fetchpriority="high"></div>{f'<div class="thumbs">{gallery}</div>' if len(imgs)>1 else ''}</div>
-<div class="info"><span class="tag" style="--c:{a[4]}">{E(a[0])}</span><h1>{E(x['title'])}</h1><p class="pprice">{cmp_} <span id="price">{money(v0['price'])}</span></p><p class="stock" id="stock"><i></i><span>In stock</span></p>{opts}{sibs}
+<div class="info"><span class="tag" style="--c:{a[4]}">{E(a[0])}</span><h1>{E(x['title'])}</h1><p class="pprice">{cmp_} <span id="price">{money(v0['price'])}</span></p><p class="stock" id="stock"><i></i><span>In stock</span></p>{p2_instore(x)}{opts}{sibs}
 <button type="button" class="btn buy" id="buy" data-atc data-v="{v0['id']}" data-h="{x['handle']}" data-t="{E(x['title'])}" data-vt="{E(v0['title']) if len(x['variants']) > 1 else ''}" data-p="{float(v0['price']):.2f}" data-i="{E(img(imgs[0], 400))}" data-c="{x['aisle']}" data-k="{x['base']}">Add to cart</button>
-<ul class="trust"><li>Secure Shopify checkout</li><li>Ships from New York City</li>{"<li>In-store pickup at 2 W 14th St</li>" if x["pickup"] else ""}<li>Open daily from 11 AM</li></ul>
+{p2_badges(True)}{p2set}
 <p class="note">Checkout opens on Shopify (namastebookshop.com), where you can choose shipping{" or in-store pickup" if x['pickup'] else ""} and review your order before paying.</p>
-{pk}<div class="desc">{''.join(f'<p>{s}</p>' for s in desc)}</div><dl class="facts">{''.join(f'<div><dt>{p}</dt><dd>{q}</dd></div>' for p, q in facts)}</dl><p class="small"><a href="/shipping/">Shipping</a> &middot; <a href="/returns/">Returns</a></p></div></section>{rows}'''
+{pk}<div class="desc">{''.join(f'<p>{s}</p>' for s in desc)}</div><dl class="facts">{''.join(f'<div><dt>{p}</dt><dd>{q}</dd></div>' for p, q in facts)}</dl><p class="small"><a href="/shipping/">Shipping</a> &middot; <a href="/returns/">Returns</a></p></div></section>{rows}{p2tail}'''
     page(f"/products/{x['handle']}/", f"{x['title']} | {BRAND}", C.PRODUCT_DESC(S, x, v0), body,
          ldjson(ld) + ldjson(crumbs_ld(cr)) + f'<script>window.NI_PRODUCT={json.dumps({"handle": x["handle"], "cartAttr": CART_ATTR, "shop": SHOP})}</script>', og_image=None if x['noimg'] else img(imgs[0], 1200))
 
@@ -472,9 +556,7 @@ TRANSIT = '''<ul class="transit"><li><b>14 St&ndash;Union Square</b> <span class
 <li><b>PATH</b> 14th Street station at Sixth Avenue.</li><li><b>Bus</b> M14A and M14D Select Bus Service run along 14th Street.</li></ul>
 <p class="small">Some lines run only at certain times (for example, the W runs weekdays and the M weekdays during the day). Check the MTA before you travel.</p>'''
 S.TRANSIT = TRANSIT
-info('/visit/', C.VISIT_TITLE, C.VISIT_DESC(S), 'Visit us at 2 West 14th Street', f'''<p class="lead">{C.VISIT_LEAD(S)}</p>{visit_block(full=True)}<h2>Getting here</h2>{TRANSIT}
-<h2>{"Reserve online, pick up in store" if PICKUP_ON else "Looking for something specific?"}</h2>
-{f"<ol><li>Find what you want in the <a href='/shop/'>online shop</a>.</li><li>Add it to your cart, tap Check out and choose <b>Pickup</b>.</li><li>Orders are {READY.lower()}. Come to {STORE_ADDR} during open hours.</li></ol><p>Questions about a pickup? Call <a href='tel:{TEL}'>{PHONE}</a>.</p>" if PICKUP_ON else f"<p>Call <a href='tel:{TEL}'>{PHONE}</a> before you come in.</p>"}{review_block()}''', ldjson(store_ld()))
+info('/visit/', P2C['visit_title'], P2C['visit_desc'], P2C['visit_h1'], p2_visit(), ldjson(store_ld()) + ldjson(faq_ld(P2C['vfaq'])))
 faqs = C.FAQ(S)
 info('/faq/', 'Frequently Asked Questions', C.FAQ_DESC(S), C.FAQ_H1, faq_html(faqs), ldjson(faq_ld(faqs)))
 for g in C.GUIDES(S):
@@ -501,7 +583,8 @@ open(os.path.join(DIST, '.nojekyll'), 'w').write('')
 if SITE.startswith('https://') and 'github.io' not in SITE: open(os.path.join(DIST, 'CNAME'), 'w').write(SITE.split('://', 1)[1] + '\n')
 today = datetime.date.today().isoformat()
 open(os.path.join(DIST, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + ''.join(f'<url><loc>{SITE}{u}</loc><lastmod>{today}</lastmod></url>' for u in SITEMAP) + '</urlset>')
-open(os.path.join(DIST, 'robots.txt'), 'w').write('User-agent: *\nDisallow: /\n' if PREVIEW else f'User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n')
+open(os.path.join(DIST, 'robots.txt'), 'w').write('User-agent: *\nDisallow: /\n' if PREVIEW else p2_robots())
+open(os.path.join(DIST, 'llms.txt'), 'w').write(p2_llms())
 summary = {'site': SITE, 'count': len(products), 'cards': len(leaders), 'aisles': {AISLES[k][0]: cat_count[k] for k in AISLE_KEYS}, 'brands': {BR.NAME[k]: n for k, n in brand_count.most_common()},
            'brand_pages': len(dir_items), 'pages': len(SITEMAP), 'pickup_on': PICKUP_ON, 'ready': READY, 'ranked': HAS_RANK, 'min_stick': S.MIN_STICK, 'under10': S.UNDER10,
            'review_url_set': bool(REVIEW_URL), 'gsc_set': bool(GSV)}
