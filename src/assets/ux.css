@@ -64,3 +64,22 @@ html{scroll-padding-top:76px}
  .actionbar{transition:transform .2s}
  body.sb-on .actionbar{transform:translateY(115%)}
 }
+/* images never stretch or crop: every photo sits in a fixed aspect-ratio box, object-fit:contain.
+   The width/height attributes (e.g. 400x400) must never set the rendered height. */
+img{height:auto}
+.ph,.gallery .main{position:relative!important;aspect-ratio:1/1!important;height:auto!important;background:#fff;overflow:hidden;flex:none!important}
+.ph img,.gallery .main img{position:absolute!important;inset:0;width:100%!important;height:100%!important;max-height:none;object-fit:contain!important;padding:4px;box-sizing:border-box;background:#fff}
+.card .ph{width:100%}
+.coll{position:relative;aspect-ratio:4/5;height:auto!important}
+.coll img{position:absolute!important;inset:0;width:100%!important;height:100%!important;object-fit:contain!important;background:#fff;padding:10px 10px 35%;box-sizing:border-box}
+.collage img{height:auto!important;aspect-ratio:1/1!important;object-fit:contain!important;background:#fff;padding:6px;box-sizing:border-box}
+.th img,.sib img,.sugg img,.ci img,.cups img,.bundle img,.rv img{object-fit:contain!important;background:#fff}
+.rv img{height:132px!important}.bundle img{height:56px!important}
+@media(max-width:899px){
+ .collage{grid-template-columns:repeat(4,1fr)!important;gap:8px;max-width:440px}
+ .collage img{transform:none!important;box-shadow:0 4px 12px #0003;border-radius:10px;padding:3px}
+ .l-stack .collage{grid-template-columns:repeat(3,1fr)!important;max-width:330px}
+ .l-silver .collage{grid-template-columns:1fr!important;max-width:240px}
+}
+@media(min-width:900px){.collage{max-width:420px;justify-self:end;width:100%}.l-mala .collage{justify-self:center;max-width:520px}}
+section.wrap>.badges{margin-bottom:22px}
